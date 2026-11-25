@@ -1,2 +1,2 @@
-# main-store-usuarios
+# main-store-2
 Practica de PHP con PostgreSQL
