@@ -11,7 +11,7 @@ include('../settings/database.php');
 
   if(!isset($_SESSION['user_id'])){
 
-        header('refresh:0;url=signin.html');
+        header('Location: signin.html');
       exit();   
   }
 
@@ -84,12 +84,12 @@ $res = pg_query($local_conn, $sql);
           
         <tr>
           <th>
-            <img src = "<?= $row['url_photo'] ?>" width ="40" alt="alt photo profile">
+            <img src = "<?= htmlspecialchars($row['url_photo'] ?? '') ?>" width ="40" alt="alt photo profile">
           </th> 
-          <th><?= $row['fullname'] ?></th>
-          <th><?= $row['email'] ?></th>
-          <th><?= $row['mobile_phone'] ?></th>
-          <th><?= $row['status'] ?></th>
+          <th><?= htmlspecialchars($row['fullname'] ?? '') ?></th>
+          <th><?= htmlspecialchars($row['email'] ?? '') ?></th>
+          <th><?= htmlspecialchars($row['mobile_phone'] ?? '') ?></th>
+          <th><?= htmlspecialchars($row['status'] ?? '') ?></th>
           <td >
                 <a href="edit_user.php?userID=<?= $row['id'] ?>">
                   
@@ -108,7 +108,7 @@ $res = pg_query($local_conn, $sql);
                 </a>
 
 
-                 <a href="update_user_status.php?userID=<?= $row['id'] ?>&userStatus=<?= $row['status'] ?>">
+                 <a href="update_user_status.php?userID=<?= $row['id'] ?>&userStatus=<?= htmlspecialchars($row['status'] ?? '') ?>">
                   <?php
 
                   if ($row['status'] == 'active') {
@@ -130,7 +130,7 @@ $res = pg_query($local_conn, $sql);
             </tr>
             <?php } ?>
          
-    <table>
+    </table>
       <a href="home.php">Back to home</a>
   </body>
 </html>

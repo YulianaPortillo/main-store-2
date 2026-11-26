@@ -1,38 +1,36 @@
 <?php
 /*
-user this  enpoint to test request
+use this endpoint to test request
 
-http://localhost/main-store/src/update_user_status.php?user_ID=ANY-ID-NUMBER
+http://localhost/main-store/src/update_user_status.php?userID=ANY-ID-NUMBER
 */
 
-    include('../settings/database.php');
+session_start();
 
-    //get data
-
-$user_id = $_GET['userID'];
-$user_status = $_GET['userStatus'];
-
-
-if ($user_status == 'active') {
-
-    $new_userStatus = 'false';
-} else {
-    $new_userStatus = 'true';
+// Only logged in users can change the status
+if (!isset($_SESSION['user_id'])) {
+    header('Location: signin.html');
+    exit();
 }
 
+include('../settings/database.php');
 
+// get data
+$user_id = $_GET['userID'] ?? '';
 
-    // PREPARE QUERY
-$sql_update_user = "UPDATE users SET status = $new_userStatus WHERE id = $user_id ";
-$res = pg_query($local_conn, $sql_update_user);
+// The logged in user can not disable himself
+if ($user_id == $_SESSION['user_id']) {
+    echo "<script>alert('You can not disable your own user !!!'); window.location = 'list_users.php';</script>";
+    exit();
+}
 
+// PREPARE QUERY (active -> inactive, inactive -> active)
+$sql_update_user = "UPDATE users SET status = NOT status, updated_at = NOW() WHERE id = $1";
+$res = pg_query_params($local_conn, $sql_update_user, [$user_id]);
 
-//validacion
-if ($res) {
-    echo "<script>alert('User status has been updated successfully !!!') </script>";
-    header('refresh:0;url=list_users.php');
-
-}else {
-    echo "<script>alert('Error: User status has not been updated  !!!') </script>";
-    header('refresh:0;url=list_users.php');
+// validacion
+if ($res && pg_affected_rows($res) > 0) {
+    echo "<script>alert('User status has been updated successfully !!!'); window.location = 'list_users.php';</script>";
+} else {
+    echo "<script>alert('Error: User status has not been updated !!!'); window.location = 'list_users.php';</script>";
 }

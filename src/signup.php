@@ -1,75 +1,50 @@
 <?php
-// Get database connection
-
-session_start ();
-
-  if(!isset($_SESSION['user_id'])){
-
-        header('refresh:0;url=signin.html');
-      exit();   
-  }
-
-
-
-include('../settings/database.php');
- 
-// Get payload from frontend
-$first_name = $_POST['fname'];
-$last_name = $_POST['lname'];
-$ident_number = $_POST['idnumber'];
-$mobile_phone = $_POST['mphone'];
-$email = $_POST['email'];
-$passwd = MD5($_POST['pswd']);
-$photo_url ='photos/photo_defaul.png';
-
-
-$sql_check_email= "SELECT * FROM users WHERE email = '$email' ";
-
-$res = pg_query($local_conn, $sql_check_email);
-
-$total = pg_num_rows($res);
-
-if($total<1){
-
-
- 
-            // Prepare query
-            $sql = "
-                INSERT INTO
-                users (firstname, lastname, ident_number, email, password, url_photo , mobile_phone)
-                VALUES (
-                    '$first_name',
-                    '$last_name',
-                    '$ident_number',
-                    '$email',
-                    '$passwd',
-                    '$photo_url',
-                    '$mobile_phone'
-
-                );
-            ";
-            
-            // Execute query
-            $res = pg_query($local_conn, $sql);
-            
-            if ($res) {
-            // echo "User has been created successfully !!!";
-
-            echo "<script>alert('User has bee create successfully !!!') </script>";
-            header('refresh:0;url=signin.html');
-
-
-
-            } else {
-                //echo "Error: User hasn't been created successfully !!!";
-            }
-
-} else {
-           echo "<script>alert('User email alredy exists .try again !!!') </script>";
-        header('refresh:0;url=signup.html');
-
-
-
+// This page only receives the register form
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: signup.html');
+    exit();
 }
 
+// Get database connection
+include('../settings/database.php');
 
+// Get payload from frontend
+$first_name = trim($_POST['fname'] ?? '');
+$last_name = trim($_POST['lname'] ?? '');
+$ident_number = trim($_POST['idnumber'] ?? '');
+$mobile_phone = trim($_POST['mphone'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$passwd = password_hash($_POST['pswd'] ?? '', PASSWORD_DEFAULT);
+$photo_url = 'photos/photo_defaul.png';
+
+// Email and identification number can not be repeated
+$sql_check_user = "SELECT id FROM users WHERE email = $1 OR ident_number = $2";
+$res = pg_query_params($local_conn, $sql_check_user, [$email, $ident_number]);
+
+if (pg_num_rows($res) > 0) {
+    echo "<script>alert('Email or identification number already exists. Try again !!!'); window.location = 'signup.html';</script>";
+    exit();
+}
+
+// Prepare query
+$sql = "
+    INSERT INTO users (firstname, lastname, ident_number, email, password, url_photo, mobile_phone)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+";
+
+// Execute query
+$res = pg_query_params($local_conn, $sql, [
+    $first_name,
+    $last_name,
+    $ident_number,
+    $email,
+    $passwd,
+    $photo_url,
+    $mobile_phone
+]);
+
+if ($res) {
+    echo "<script>alert('User has been created successfully !!!'); window.location = 'signin.html';</script>";
+} else {
+    echo "<script>alert('Error: User has not been created !!!'); window.location = 'signup.html';</script>";
+}

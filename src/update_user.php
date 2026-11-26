@@ -96,7 +96,8 @@ $sql_update_user = "
         ident_number = $3,
         email        = $4,
         mobile_phone = $5,
-        url_photo    = $6
+        url_photo    = $6,
+        updated_at   = NOW()
     WHERE id = $7
 ";
 $res = pg_query_params($local_conn, $sql_update_user, [

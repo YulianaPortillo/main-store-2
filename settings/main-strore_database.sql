@@ -18,5 +18,3 @@ CREATE TABLE users (
 
 --Select all users from users table 
 SELECT * fROM users;
---iNSERT A NEW USERS INTO USERS TABLE 
-iNSERT INTO users (firstname, lastname, ident_number, email, password) VALUES
